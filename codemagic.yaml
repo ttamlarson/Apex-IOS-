@@ -1,0 +1,35 @@
+workflows:
+  ios-testflight:
+    name: Apex iOS TestFlight
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: apex_asc
+    environment:
+      node: latest
+      xcode: latest
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.ttamlarson.apexprotocol
+    scripts:
+      - name: Install npm dependencies
+        script: npm ci
+      - name: Sync Capacitor to iOS
+        script: npx cap sync ios
+      - name: Set up code signing
+        script: xcode-project use-profiles
+      - name: Set build number
+        script: |
+          sed -i '' "s/CURRENT_PROJECT_VERSION = [0-9]*;/CURRENT_PROJECT_VERSION = $BUILD_NUMBER;/g" ios/App/App.xcodeproj/project.pbxproj
+      - name: Build ipa
+        script: |
+          xcode-project build-ipa --project "ios/App/App.xcodeproj" --scheme "App"
+    artifacts:
+      - build/ios/ipa/*.ipa
+    publishing:
+      email:
+        recipients:
+          - ttamlarson@gmail.com
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
