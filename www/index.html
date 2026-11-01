@@ -1,0 +1,674 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0c0e">
+ <link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="description" content="Apex Protocol — training, nutrition and recovery tracker">
+<title>Apex Protocol</title>
+<style>
+:root{color-scheme:dark;--bg:#0b0c0e;--panel:#15171a;--line:#30343a;--text:#f3f4f6;--muted:#a0a5ad;--silver:#d8dde3;--green:#8ed6aa}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,sans-serif}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.app{max-width:1050px;margin:auto;padding:18px 14px 60px}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:46px;height:46px;border:1px solid #777e87;border-radius:13px;display:grid;place-items:center;font-size:26px;font-weight:900;background:linear-gradient(145deg,#333840,#101113)}
+.eyebrow{font-size:10px;letter-spacing:.22em;color:var(--muted);font-weight:800}
+h1{font-size:19px;letter-spacing:.08em;margin:2px 0}
+h2{font-size:26px;margin:8px 0 14px}
+h3{font-size:16px;margin:0 0 12px}
+p{color:var(--muted)}
+nav{display:flex;gap:7px;overflow:auto;margin-bottom:18px;padding-bottom:4px}
+nav button{white-space:nowrap;border:1px solid var(--line);background:transparent;color:var(--muted);padding:10px 13px;border-radius:12px}
+nav button.active{background:var(--silver);color:#101114;font-weight:800}
+.view{display:none}.view.active{display:block}
+.hero{padding:25px;border:1px solid var(--line);border-radius:22px;background:radial-gradient(ellipse at top right,#30343b,#17191c 55%,#111214);margin-bottom:14px}
+.hero h2{font-size:clamp(30px,6vw,43px);line-height:1.05;letter-spacing:-.04em}
+.hero p{max-width:580px}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:17px;padding:16px;margin-bottom:12px;min-width:0}
+.metric{font-size:27px;font-weight:850;letter-spacing:-.04em}
+.small{font-size:12px;color:var(--muted)}
+.bar{height:6px;background:#30343a;border-radius:9px;overflow:hidden;margin:10px 0}
+.bar span{display:block;height:100%;background:var(--silver);width:0}
+.btn{border:1px solid #e0e3e7;background:var(--silver);color:#101114;border-radius:10px;padding:10px 13px;font-weight:750}
+.btn.secondary{background:#22252a;color:var(--text);border-color:#40454d}
+.btn.danger{background:#381c20;color:#ffced1;border-color:#603038}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.between{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.field label{font-size:12px;color:var(--muted)}
+input,select,textarea{width:100%;min-width:0;background:#0c0e10;border:1px solid #383d44;border-radius:9px;padding:10px;color:var(--text)}
+.formgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+ /* Training layout: keep date field compact */
+#training .formgrid .field:nth-child(2) input[type="date"] {
+  width: 100%;
+  max-width: 170px;
+  min-width: 0;
+  box-sizing: border-box;
+}
+.section-title{margin:22px 0 10px}
+.exercise{background:#101214;border:1px solid var(--line);padding:13px;border-radius:13px;margin:10px 0}
+.setrow{display:grid;grid-template-columns:32px 1fr 1fr 35px;gap:7px;align-items:center;margin-top:8px}
+.setrow input{padding:8px}
+.iconbtn{background:#24272c;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:7px}
+.listitem{padding:12px 0;border-bottom:1px solid var(--line)}
+.listitem:last-child{border-bottom:0}
+.empty{padding:18px;text-align:center;color:var(--muted);border:1px dashed #383d44;border-radius:11px}
+.notice{background:#1d2024;border-radius:11px;padding:12px;color:#c4c8ce;font-size:12px;margin:12px 0}
+.pill{border:1px solid #454b54;border-radius:99px;padding:4px 8px;font-size:10px;letter-spacing:.08em;color:#d4d9df}
+.timer{font-size:42px;font-weight:850;font-variant-numeric:tabular-nums}
+.history{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px}
+canvas{width:100%;height:190px;display:block}
+.hidden{display:none!important}
+footer{text-align:center;color:#707780;font-size:10px;letter-spacing:.12em;margin-top:28px}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#e6e9ed;color:#111;padding:11px 16px;border-radius:99px;font-weight:800;z-index:10}
+@media(max-width:700px){
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .two{grid-template-columns:1fr}
+  .formgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .app{padding:13px 11px 45px}
+  .hero{padding:20px}
+  .card{padding:13px}
+  .metric{font-size:24px}
+
+  /* Keep the Training date inside its column */
+  #training .formgrid .field:nth-child(2) input[type="date"]{
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    box-sizing:border-box;
+  }
+}
+ @media(max-width:700px){
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .two{grid-template-columns:1fr}
+  .formgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .app{padding:13px 11px 45px}
+  .hero{padding:20px}
+  .card{padding:13px}
+  .metric{font-size:24px}
+
+  /* Keep the Training date inside its column */
+  #training .formgrid .field:nth-child(2) input[type="date"]{
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    box-sizing:border-box;
+  }
+}
+@media(max-width:380px){.setrow{grid-template-columns:24px 1fr 1fr 30px}.brand h1{font-size:16px}}
+ /* iPhone Safari: constrain the Training date field */
+#training .formgrid {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+#training .formgrid .field:nth-child(2) {
+  min-width: 0;
+  width: 100%;
+}
+
+#training #wdate {
+  display: block;
+  width: 100%;
+  max-width: 150px;
+  min-width: 0;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+  padding: 10px 6px;
+  font-size: 14px;
+}
+
+/* Desktop: retain three columns */
+@media (min-width: 701px) {
+  #training .formgrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  #training #wdate {
+    max-width: 170px;
+  }
+}
+
+/* Custom programme builder and analytics */
+.hidden{display:none!important}
+.day-editor{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:10px;background:#101215}
+.day-editor .field{margin-top:9px}
+.day-editor textarea{min-height:116px;resize:vertical}
+.split-card{border-top:1px solid var(--line);padding:12px 0}
+.split-day-row{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:8px}
+.split-day-row .small{flex:1;min-width:110px}
+.split-day-row button{padding:7px 10px}
+.analytics-row{padding:9px 0;border-bottom:1px solid var(--line)}
+.analytics-row:last-child{border-bottom:0}
+#splitManager input,#splitManager textarea{width:100%;min-width:0}
+@media(max-width:480px){#splitManager .between{align-items:flex-start;flex-wrap:wrap}.day-editor{padding:10px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+ <div class="brand"><div class="logo">A</div><div><div class="eyebrow">YOUR TRAINING SYSTEM</div><h1>APEX PROTOCOL</h1></div></div>
+ <div class="small" id="today"></div>
+</header>
+
+<nav>
+ <button class="active" data-tab="home">Overview</button>
+ <button data-tab="training">Training</button>
+ <button data-tab="nutrition">Nutrition</button>
+ <button data-tab="progress">Progress</button>
+ <button data-tab="recovery">Recovery</button>
+ <button data-tab="settings">Settings</button>
+</nav>
+
+<section class="view active" id="home">
+ <div class="hero">
+  <span class="pill">CONSISTENCY OVER INTENSITY</span>
+  <h2>Build strength.<br>Earn your progress.</h2>
+  <p>Train with purpose. Track every rep. Build a stronger version of yourself through consistent training, nutrition and recovery.</p>
+  <div class="row"><button class="btn" data-go="training">Start training</button><button class="btn secondary" data-go="nutrition">Log nutrition</button></div>
+ </div>
+ <div class="grid">
+  <div class="card"><div class="small">CALORIES</div><div class="metric" id="dcal">0</div><div class="small" id="dcalgoal">of 2800 kcal</div><div class="bar"><span id="dcalbar"></span></div></div>
+  <div class="card"><div class="small">PROTEIN</div><div class="metric" id="dpro">0g</div><div class="small" id="dprogoal">of 130 g</div><div class="bar"><span id="dprobar"></span></div></div>
+  <div class="card"><div class="small">BODY WEIGHT</div><div class="metric" id="dweight">—</div><div class="small">Latest weigh-in</div></div>
+  <div class="card"><div class="small">WORKOUTS</div><div class="metric" id="dsessions">0</div><div class="small">Sessions logged</div></div>
+</div>
+<h3 class="section-title">Your training split</h3>
+<div class="grid two">
+  <div class="card">
+    <h3>Upper / Lower</h3>
+    <div class="small">Four-day split · Upper body and lower body</div>
+  </div>
+  <div class="card">
+    <h3>Push / Pull / Legs</h3>
+    <div class="small">Three-day split · Push muscles, pull muscles and legs</div>
+  </div>
+</div>
+</div>
+ <div class="notice">Starting nutrition targets: 2,800 kcal and 130 g protein. Adjust training volume when nightshift sleep or recovery is poor.</div>
+ <h3 class="section-title">Recent activity</h3><div class="card" id="activity"><div class="empty">Your activity will appear here.</div></div>
+</section>
+
+<section class="view" id="training">
+ <div class="eyebrow">SESSION TRACKER</div><h2>Training</h2>
+ <div class="card" id="splitManager">
+  <div class="between"><div><h3>My training splits</h3><div class="small">Build and save your own programmes and training days.</div></div><button class="btn" id="newSplit">+ Create split</button></div>
+  <div id="savedSplits" style="margin-top:12px"><div class="empty">No custom splits yet. Create one to get started.</div></div>
+  <div id="splitEditor" class="hidden" style="margin-top:14px">
+   <div class="field"><label for="splitName">Programme name</label><input id="splitName" maxlength="60" placeholder="e.g. 5-Day Strength Split"></div>
+   <div class="small" style="margin:10px 0">For each day, enter one exercise per line in this format: <strong>Exercise name | sets | reps | rest seconds</strong>. Example: Bench Press | 3 | 6-8 | 120</div>
+   <div id="splitDaysEditor"></div>
+   <div class="row" style="margin-top:12px"><button class="btn secondary" id="addSplitDay">+ Training day</button><button class="btn" id="saveSplit">Save split</button><button class="btn secondary" id="cancelSplit">Cancel</button></div>
+  </div>
+ </div>
+ <div class="card"><div class="formgrid">
+  <div class="field">   <label>Workout</label>   <select id="wtype">     <option>Upper A</option>     <option>Lower A</option>     <option>Upper B</option>     <option>Lower B</option>     <option>Push Day</option>     <option>Pull Day</option>     <option>Leg Day</option>     <option>Custom</option>   </select> </div>
+  <div class="field"><label>Date</label><input id="wdate" type="date"></div>
+  <div class="field"><label>Duration (min)</label><input id="duration" type="number" min="0" placeholder="60"></div>
+ </div><div class="row" style="margin-top:12px"><button class="btn" id="loadplan">Load workout</button><button class="btn secondary" id="addex">+ Exercise</button></div></div>
+ <div id="exercises"></div>
+ <div class="card"><div class="field"><label>Session notes</label><textarea id="wnotes" rows="2" placeholder="Energy, technique, session notes..."></textarea></div><div class="row" style="margin-top:12px"><button class="btn" id="saveworkout">Save workout</button><button class="btn secondary" id="clearworkout">Clear session</button></div></div>
+ <h3 class="section-title">Rest timer</h3>
+ <div class="card"><div class="between"><div><div class="small">TIME REMAINING</div><div class="timer" id="timer">01:30</div></div><div class="row"><button class="btn secondary" data-seconds="60">60s</button><button class="btn secondary" data-seconds="90">90s</button><button class="btn secondary" data-seconds="120">120s</button></div></div><div class="row" style="margin-top:12px"><button class="btn" id="starttimer">Start</button><button class="btn secondary" id="pausetimer">Pause</button><button class="btn secondary" id="resettimer">Reset</button></div></div>
+ <h3 class="section-title">Workout history</h3><div class="card" id="whistory"><div class="empty">No workouts saved yet.</div></div>
+</section>
+
+<section class="view" id="nutrition">
+ <div class="eyebrow">FUEL THE WORK</div><h2>Nutrition</h2>
+ <div class="grid two">
+  <div class="card"><div class="small">CALORIES</div><div class="metric"><span id="ncal">0</span> <span class="small">kcal</span></div><div class="bar"><span id="ncalbar"></span></div><div class="small" id="ncalgoal">Target: 2800</div></div>
+  <div class="card"><div class="small">PROTEIN</div><div class="metric"><span id="npro">0</span> <span class="small">g</span></div><div class="bar"><span id="nprobar"></span></div><div class="small" id="nprogoal">Target: 130</div></div>
+ </div>
+ <div class="card"><h3>Add food or meal</h3><div class="formgrid">
+  <div class="field" style="grid-column:span 2"><label>Food / meal</label><input id="fname" placeholder="Chicken and rice"></div>
+  <div class="field"><label>Calories (kcal)</label><input id="fcal" type="number" min="0" placeholder="500"></div>
+  <div class="field"><label>Protein (g)</label><input id="fpro" type="number" min="0" step=".1" placeholder="35"></div>
+  <div class="field"><label>Date</label><input id="fdate" type="date"></div>
+ </div><button class="btn" id="addfood" style="margin-top:12px">Add food</button></div>
+ <h3 class="section-title">Food log</h3><div class="card" id="foodlist"><div class="empty">No food logged for this date.</div></div>
+</section>
+
+<section class="view" id="progress">
+ <div class="eyebrow">MEASURE WHAT MATTERS</div><h2>Progress</h2>
+ <div class="card"><h3>Log measurements</h3><div class="formgrid">
+  <div class="field"><label>Weight (kg)</label><input id="weight" type="number" min="0" step=".1" placeholder="63.5"></div>
+  <div class="field"><label>Waist (cm, optional)</label><input id="waist" type="number" min="0" step=".1" placeholder="76"></div>
+  <div class="field"><label>Date</label><input id="mdate" type="date"></div>
+ </div><button class="btn" id="savemeasure" style="margin-top:12px">Save measurement</button></div>
+ <h3 class="section-title">Body weight trend</h3><div class="card"><canvas id="chart" height="190"></canvas><div class="small">Your saved weigh-ins on this device.</div></div>
+ <h3 class="section-title">Measurement history</h3><div class="card" id="measurelist"><div class="empty">No measurements yet.</div></div>
+ <h3 class="section-title">Progressive overload</h3><div class="card"><p>When you can complete all planned reps with controlled technique, increase the load by the smallest practical increment. If form or recovery suffers, hold the weight or reduce volume.</p><div id="liftlist"><div class="empty">Save workout logs to see your recent loads.</div></div></div>
+ <h3 class="section-title">Strength analytics</h3>
+ <div class="grid two">
+  <div class="card"><h3>Personal records</h3><div class="small">Best logged working weight for each exercise.</div><div id="prlist" style="margin-top:10px"><div class="empty">Log weighted exercises to build your records.</div></div></div>
+  <div class="card"><h3>Muscle-group volume</h3><div class="small">Completed sets in the last 30 days, estimated from exercise names.</div><div id="musclelist" style="margin-top:10px"><div class="empty">Complete logged sets to see training volume.</div></div></div>
+ </div>
+</section>
+
+<section class="view" id="recovery">
+ <div class="eyebrow">RECOVER TO PERFORM</div><h2>Recovery</h2>
+ <div class="card"><h3>Daily check-in</h3><div class="formgrid">
+  <div class="field"><label>Sleep (hours)</label><input id="sleep" type="number" min="0" max="24" step=".25" placeholder="6"></div>
+  <div class="field"><label>Energy (1–5)</label><select id="energy"><option value="3">3 — Average</option><option value="1">1 — Very low</option><option value="2">2 — Low</option><option value="4">4 — Good</option><option value="5">5 — Excellent</option></select></div>
+  <div class="field"><label>Stress (1–5)</label><select id="stress"><option value="3">3 — Average</option><option value="1">1 — Very low</option><option value="2">2 — Low</option><option value="4">4 — High</option><option value="5">5 — Very high</option></select></div>
+  <div class="field"><label>Soreness (1–5)</label><select id="soreness"><option value="3">3 — Average</option><option value="1">1 — Very low</option><option value="2">2 — Low</option><option value="4">4 — High</option><option value="5">5 — Very high</option></select></div>
+  <div class="field"><label>Date</label><input id="rdate" type="date"></div>
+ </div><div class="field" style="margin-top:10px"><label>Notes</label><textarea id="rnotes" rows="2" placeholder="Fatigue, hydration, nightshift..."></textarea></div><button class="btn" id="saverecovery" style="margin-top:12px">Save check-in</button></div>
+ <h3 class="section-title">Recovery history</h3><div class="card" id="recoverylist"><div class="empty">No check-ins yet.</div></div>
+</section>
+
+<section class="view" id="settings">
+ <div class="eyebrow">YOUR RECORDS</div><h2>Settings & backups</h2>
+ <div class="card"><h3>Daily targets</h3><div class="formgrid">
+  <div class="field"><label>Calories (kcal)</label><input id="ctarget" type="number" min="1" value="2800"></div>
+  <div class="field"><label>Protein (g)</label><input id="ptarget" type="number" min="1" value="130"></div>
+ </div><button class="btn" id="savesettings" style="margin-top:12px">Save targets</button></div>
+ <div class="card"><h3>Backup & restore</h3><p>Export your data regularly. Records are stored in this browser and do not automatically sync to other devices.</p><div class="row"><button class="btn" id="export">Export JSON backup</button><label class="btn secondary" for="import">Import backup</label><input class="hidden" id="import" type="file" accept=".json,application/json"></div><p class="small">Importing replaces current records. Only import a backup you trust.</p></div>
+ <div class="card"><h3>Local storage</h3><p>Your records stay in this browser. Clearing browser data can erase them.</p><button class="btn danger" id="erase">Delete all app data</button></div>
+</section>
+<footer>APEX PROTOCOL · TRAIN WITH PURPOSE. BUILD WITH DISCIPLINE.</footer>
+</div>
+<div id="toast" class="hidden" role="status"></div>
+
+<script>
+(() => {
+'use strict';
+const KEY='apexProtocolData_v1';
+const $=id=>document.getElementById(id);
+const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
+const id=()=>Math.random().toString(36).slice(2,10);
+const defaults=()=>({settings:{calories:2800,protein:130},workouts:[],foods:[],measurements:[],recoveries:[],customSplits:[],current:{type:'Upper A',date:today(),duration:'',notes:'',exercises:[]}});
+let state;
+try{state={...defaults(),...JSON.parse(localStorage.getItem(KEY)||'{}')};const d=defaults();state.settings={...d.settings,...state.settings};for(const k of ['workouts','foods','measurements','recoveries','customSplits'])if(!Array.isArray(state[k]))state[k]=[];state.current={...d.current,...state.current}}catch{state=defaults()}
+const plans = {
+  // Original Upper / Lower programme
+  'Upper A': [
+    ['Bench Press', 3, '6–8'],
+    ['Barbell Row', 3, '8–10'],
+    ['Incline Dumbbell Press', 3, '8–10'],
+    ['Lat Pulldown', 3, '8–12'],
+    ['Lateral Raises', 3, '12–15'],
+    ['Tricep Pushdowns', 3, '10–12'],
+    ['Bicep Curls', 3, '10–12']
+  ],
+
+  'Lower A': [
+    ['Squat', 3, '6–8'],
+    ['Romanian Deadlift', 3, '8–10'],
+    ['Leg Press', 3, '10–12'],
+    ['Leg Curl', 3, '10–12'],
+    ['Calf Raises', 4, '12–15']
+  ],
+
+  'Upper B': [
+    ['Overhead Press', 3, '6–8'],
+    ['Pull-Ups / Lat Pulldown', 3, '8–12'],
+    ['Dumbbell Bench Press', 3, '8–10'],
+    ['Seated Cable Row', 3, '8–12'],
+    ['Lateral Raises', 3, '12–15'],
+    ['Skull Crushers', 3, '10–12'],
+    ['Hammer Curls', 3, '10–12']
+  ],
+
+  'Lower B': [
+    ['Deadlift', 3, '5'],
+    ['Hack Squat', 3, '8–10'],
+    ['Bulgarian Split Squat', 3, '8–10 per leg'],
+    ['Leg Extension', 3, '10–12'],
+    ['Hamstring Curl', 3, '10–12'],
+    ['Calf Raises', 4, '12–15']
+  ],
+
+  // Additional Push / Pull / Legs programme
+  'Push Day': [
+    ['Bench Press', 3, '6–8'],
+    ['Incline Dumbbell Press', 3, '6–8'],
+    ['Seated Shoulder Press', 3, '6–8'],
+    ['Cable Press', 3, '8–10'],
+    ['Tricep Pushdowns', 3, '6–8'],
+    ['Skull Crushers', 3, '6–8'],
+    ['Push-Ups', 3, 'Failure']
+  ],
+
+  'Pull Day': [
+    ['Seated Row', 3, '6–8'],
+    ['Shrugs', 3, '6–8'],
+    ['Lat Pulldowns', 3, '6–8'],
+    ['Bicep Curls', 3, '8–10'],
+    ['Deadlift', 3, '5'],
+    ['Landmine Rows', 3, '6–8']
+  ],
+
+  'Leg Day': [
+    ['Hack Squats', 3, '6–8'],
+    ['Romanian Deadlifts', 3, '5'],
+    ['Leg Press', 3, '6–8'],
+    ['Hamstring Curl (per leg)', 3, '5 per leg'],
+    ['Leg Extensions', 3, '6–8'],
+    ['Calf Raises', 4, '8–10']
+  ]
+};
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function n(v){return Number.isFinite(Number(v))?Number(v):0}
+function save(){localStorage.setItem(KEY,JSON.stringify(state));render()}
+function toast(s){$('toast').textContent=s;$('toast').classList.remove('hidden');setTimeout(()=>$('toast').classList.add('hidden'),2200)}
+function dateText(d){return d?new Date(d+'T12:00:00').toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}):'—'}
+function newEx(name='',sets=3,target='8–12',rest=90){return {id:id(),name,target,rest:Number(rest)||90,sets:Array.from({length:Number(sets)||3},()=>({weight:'',reps:'',done:false}))}}
+function customKey(splitId,dayId){return `custom:${splitId}:${dayId}`}
+function customKeyParts(type){const m=String(type||'').match(/^custom:([^:]+):([^:]+)$/);return m?{splitId:m[1],dayId:m[2]}:null}
+function workoutLabel(type){const parts=customKeyParts(type);if(!parts)return type||'Workout';const split=state.customSplits.find(x=>x.id===parts.splitId);const day=split?.days.find(x=>x.id===parts.dayId);return split&&day?`${split.name} — ${day.name}`:(type||'Custom workout')}
+function customDayForKey(type){const parts=customKeyParts(type);if(!parts)return null;const split=state.customSplits.find(x=>x.id===parts.splitId);const day=split?.days.find(x=>x.id===parts.dayId);return day?{split,day}:null}
+function refreshWorkoutTypes(){
+ const sel=$('wtype');if(!sel)return;const current=state.current.type||sel.value||'Upper A';
+ const builtins=Object.keys(plans).map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');
+ const customs=state.customSplits.flatMap(split=>split.days.map(day=>{const key=customKey(split.id,day.id);return `<option value="${esc(key)}">${esc(split.name)} — ${esc(day.name)}</option>`})).join('');
+ sel.innerHTML=builtins+customs;
+ sel.value=[...Object.keys(plans),...state.customSplits.flatMap(sp=>sp.days.map(d=>customKey(sp.id,d.id)))].includes(current)?current:'Upper A';
+}
+function setPlan(type){
+ state.current.type=type;
+ const custom=customDayForKey(type);
+ if(custom)state.current.exercises=custom.day.exercises.map(e=>newEx(e.name,e.sets,e.target,e.rest));
+ else state.current.exercises=(plans[type]||[]).map(p=>newEx(p[0],p[1],p[2],p[3]||90));
+ renderExercises();
+}
+function renderExercises(){
+ const el=$('exercises');
+ if(!state.current.exercises.length){el.innerHTML='<div class="empty">Load a workout or add your own exercise.</div>';return}
+ el.innerHTML=state.current.exercises.map(e=>`<div class="exercise"><div class="between"><div style="flex:1"><input data-name="${e.id}" value="${esc(e.name)}" aria-label="Exercise name" placeholder="Exercise name"><div class="small" style="margin-top:5px">Target reps: ${esc(e.target)} · Rest: ${n(e.rest)||90}s</div></div><button class="iconbtn" data-remove="${e.id}">✕</button></div><div class="setrow"><span class="small">SET</span><span class="small">WEIGHT (kg)</span><span class="small">REPS</span><span></span></div>${e.sets.map((s,i)=>`<div class="setrow"><span class="small">${i+1}</span><input type="number" min="0" step=".25" data-set="${e.id}" data-i="${i}" data-key="weight" value="${esc(s.weight)}" placeholder="kg" aria-label="Weight"><input type="number" min="0" data-set="${e.id}" data-i="${i}" data-key="reps" value="${esc(s.reps)}" placeholder="reps" aria-label="Reps"><button class="iconbtn" data-done="${e.id}" data-i="${i}" style="color:${s.done?'var(--green)':'var(--muted)'}">${s.done?'✓':'○'}</button></div>`).join('')}<div class="row" style="margin-top:9px"><button class="btn secondary" data-addset="${e.id}">+ Set</button><button class="btn secondary" data-rest="${n(e.rest)||90}">Rest ${n(e.rest)||90}s</button></div></div>`).join('');
+}
+function totals(date){return state.foods.filter(f=>f.date===date).reduce((a,f)=>({cal:a+n(f.cal),pro:a+n(f.pro)}),{cal:0,pro:0})}
+function bar(id,val,target){$(id).style.width=Math.min(100,target?Math.max(0,val/target*100):0)+'%'}
+function renderFood(){const t=totals($('fdate').value||today()),c=n(state.settings.calories),p=n(state.settings.protein);$('ncal').textContent=Math.round(t.cal);$('npro').textContent=Math.round(t.pro);$('ncalgoal').textContent='Target: '+c+' kcal';$('nprogoal').textContent='Target: '+p+' g';bar('ncalbar',t.cal,c);bar('nprobar',t.pro,p);const fs=state.foods.filter(f=>f.date===($('fdate').value||today()));$('foodlist').innerHTML=fs.length?fs.map(f=>`<div class="listitem between"><div><strong>${esc(f.name)}</strong><div class="small">${n(f.cal)} kcal · ${n(f.pro)} g protein</div></div><button class="iconbtn" data-food-del="${f.id}">✕</button></div>`).join(''):'<div class="empty">No food logged for this date.</div>'}
+function renderWorkoutHistory(){$('whistory').innerHTML=state.workouts.length?[...state.workouts].reverse().map(w=>`<div class="listitem"><div class="between"><strong>${esc(workoutLabel(w.type))}</strong><span class="small">${dateText(w.date)}</span></div><div class="small">${w.exercises.length} exercises · ${w.exercises.reduce((a,e)=>a+e.sets.filter(s=>s.done).length,0)} sets completed${w.duration?' · '+esc(w.duration)+' min':''}</div>${w.notes?`<p class="small">${esc(w.notes)}</p>`:''}<div class="row"><button class="btn secondary" data-reload="${w.id}">Load again</button><button class="btn danger" data-work-del="${w.id}">Delete</button></div></div>`).join(''):'<div class="empty">No workouts saved yet.</div>'}
+function renderMeasures(){const ms=[...state.measurements].sort((a,b)=>a.date.localeCompare(b.date));const last=ms.filter(m=>m.weight!=='').at(-1);$('dweight').textContent=last?last.weight+' kg':'—';$('measurelist').innerHTML=ms.length?[...ms].reverse().map(m=>`<div class="history"><span>${dateText(m.date)}</span><strong>${m.weight!==''?esc(m.weight)+' kg':'—'}</strong><span>${m.waist?esc(m.waist)+' cm waist':'—'}</span><button class="iconbtn" data-measure-del="${m.id}">✕</button></div>`).join(''):'<div class="empty">No measurements yet.</div>';drawChart(ms)}
+function drawChart(ms){const c=$('chart');if(!c)return;const w=c.clientWidth||600,h=190,dpr=window.devicePixelRatio||1;c.width=w*dpr;c.height=h*dpr;const x=c.getContext('2d');x.scale(dpr,dpr);x.clearRect(0,0,w,h);x.strokeStyle='#343941';for(let i=1;i<4;i++){x.beginPath();x.moveTo(8,h*i/4);x.lineTo(w-8,h*i/4);x.stroke()}const a=ms.filter(m=>n(m.weight)>0);if(!a.length){x.fillStyle='#a0a5ad';x.font='13px system-ui';x.fillText('Log your body weight to start the chart.',12,h/2);return}const vals=a.map(m=>n(m.weight)),lo=Math.min(...vals)-1,hi=Math.max(...vals)+1,px=i=>a.length===1?w/2:12+i*(w-24)/(a.length-1),py=v=>h-18-(v-lo)/(hi-lo)*(h-36);x.strokeStyle='#d8dde3';x.lineWidth=2;x.beginPath();a.forEach((m,i)=>i?x.lineTo(px(i),py(n(m.weight))):x.moveTo(px(i),py(n(m.weight))));x.stroke();a.forEach((m,i)=>{x.fillStyle='#f3f4f6';x.beginPath();x.arc(px(i),py(n(m.weight)),3,0,Math.PI*2);x.fill()});x.fillStyle='#a0a5ad';x.font='11px system-ui';x.fillText(hi.toFixed(1)+' kg',8,12);x.fillText(lo.toFixed(1)+' kg',8,h-3)}
+function renderLifts(){
+ const m={};
+ state.workouts.forEach(w=>w.exercises.forEach(e=>{const sets=e.sets.filter(s=>n(s.weight)>0);if(sets.length){(m[e.name]??=[]).push({date:w.date,weight:Math.max(...sets.map(s=>n(s.weight))),reps:sets.map(s=>s.reps).join('/'),target:e.target,sets:e.sets})}}));
+ const entries=Object.entries(m);
+ $('liftlist').innerHTML=entries.length?entries.map(([name,a])=>{
+  const last=a[a.length-1], upper=String(last.target||'').match(/(\d+)\s*$/), top=upper?Number(upper[1]):null;
+  const completed=last.sets.filter(x=>x.done);
+  const allAtTop=top!==null&&completed.length===last.sets.length&&last.sets.length>0&&last.sets.every(x=>n(x.reps)>=top);
+  const suggestion=allAtTop?'Consider a small load increase next session.':'Repeat the load and aim to complete all target reps with control.';
+  return `<div class="listitem"><div class="between"><div><strong>${esc(name)}</strong><div class="small">${dateText(last.date)} · Reps ${esc(last.reps||'—')}</div></div><strong>${last.weight} kg</strong></div><div class="small" style="margin-top:5px">${suggestion}</div></div>`
+ }).join(''):'<div class="empty">Save workouts to track your recent loads.</div>';
+}
+function renderAnalytics(){
+ const records={};
+ state.workouts.forEach(w=>w.exercises.forEach(e=>{
+  (e.sets||[]).forEach(set=>{const weight=n(set.weight),reps=n(set.reps);if(weight>0){const rec=records[e.name]||{weight:0,reps:0,date:w.date,estimated:0};const est=reps>0?weight*(1+reps/30):weight;if(weight>rec.weight)records[e.name]={weight,reps,date:w.date,estimated:est};else if(est>rec.estimated)rec.estimated=est;records[e.name]=records[e.name]||rec}})
+ }));
+ const pr=Object.entries(records).sort((a,b)=>b[1].weight-a[1].weight);
+ $('prlist').innerHTML=pr.length?pr.slice(0,12).map(([name,r])=>`<div class="analytics-row"><div class="between"><strong>${esc(name)}</strong><strong>${r.weight} kg</strong></div><div class="small">${r.reps?`${r.reps} reps · `:''}Est. 1RM ${r.estimated.toFixed(1)} kg · ${dateText(r.date)}</div></div>`).join(''):'<div class="empty">Log weighted exercises to build your records.</div>';
+ const cutoff=new Date();cutoff.setDate(cutoff.getDate()-29);const since=`${cutoff.getFullYear()}-${String(cutoff.getMonth()+1).padStart(2,'0')}-${String(cutoff.getDate()).padStart(2,'0')}`;
+ const groups={Chest:0,Back:0,Shoulders:0,Biceps:0,Triceps:0,Quads:0,Hamstrings:0,Glutes:0,Calves:0};
+ const classify=name=>{const x=name.toLowerCase(),g=[];if(/bench|chest|fly|push.?up|cable press|pec/.test(x))g.push('Chest');if(/row|pulldown|pull.?up|deadlift|shrug/.test(x))g.push('Back');if(/shoulder|overhead press|lateral raise/.test(x))g.push('Shoulders');if(/curl/.test(x)&&!/leg curl|hamstring curl/.test(x))g.push('Biceps');if(/tricep|skull crusher|pushdown/.test(x))g.push('Triceps');if(/squat|leg press|leg extension|lunge|split squat/.test(x))g.push('Quads');if(/romanian deadlift|leg curl|hamstring/.test(x))g.push('Hamstrings');if(/hip thrust|glute|deadlift|split squat|lunge/.test(x))g.push('Glutes');if(/calf|calves/.test(x))g.push('Calves');return [...new Set(g)]};
+ state.workouts.filter(w=>w.date>=since).forEach(w=>w.exercises.forEach(e=>{const count=(e.sets||[]).filter(st=>st.done).length;classify(e.name).forEach(g=>groups[g]+=count)}));
+ const vals=Object.entries(groups).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+ $('musclelist').innerHTML=vals.length?vals.map(([name,v])=>`<div class="analytics-row"><div class="between"><span>${name}</span><strong>${v} sets</strong></div><div class="bar"><span style="display:block;width:${Math.max(3,v/Math.max(...vals.map(x=>x[1]))*100)}%"></span></div></div>`).join(''):'<div class="empty">Complete logged sets to see training volume.</div>';
+}
+function renderRecovery(){$('recoverylist').innerHTML=state.recoveries.length?[...state.recoveries].reverse().map(r=>`<div class="listitem"><div class="between"><strong>${dateText(r.date)}</strong><span class="small">${esc(r.sleep||'—')} h sleep</span></div><div class="small">Energy ${r.energy}/5 · Stress ${r.stress}/5 · Soreness ${r.soreness}/5</div>${r.notes?`<p class="small">${esc(r.notes)}</p>`:''}<button class="iconbtn" data-recovery-del="${r.id}">Delete</button></div>`).join(''):'<div class="empty">No recovery check-ins yet.</div>'}
+function renderHome(){const t=totals(today()),c=n(state.settings.calories),p=n(state.settings.protein);$('dcal').textContent=Math.round(t.cal);$('dpro').textContent=Math.round(t.pro)+'g';$('dcalgoal').textContent='of '+c+' kcal';$('dprogoal').textContent='of '+p+' g';bar('dcalbar',t.cal,c);bar('dprobar',t.pro,p);$('dsessions').textContent=state.workouts.length;const a=[...state.workouts].reverse().slice(0,4);$('activity').innerHTML=a.length?a.map(w=>`<div class="listitem between"><strong>${esc(workoutLabel(w.type))}</strong><span class="small">${dateText(w.date)}</span></div>`).join(''):'<div class="empty">Your logged workouts will appear here.</div>'}
+function render(){refreshWorkoutTypes();renderSplitManager();renderHome();renderFood();renderMeasures();renderLifts();renderAnalytics();renderRecovery();renderWorkoutHistory();$('ctarget').value=state.settings.calories;$('ptarget').value=state.settings.protein}
+let splitDraftDays=[];
+let editingSplitId=null;
+function renderSplitDayEditor(){
+ const host=$('splitDaysEditor');if(!host)return;
+ host.innerHTML=splitDraftDays.map((day,i)=>`<div class="day-editor" data-draft-day="${i}">
+  <div class="between"><strong>Training day ${i+1}</strong>${splitDraftDays.length>1?`<button type="button" class="iconbtn" data-remove-draft-day="${i}" aria-label="Remove training day">✕</button>`:''}</div>
+  <div class="field"><label>Day name</label><input data-draft-name="${i}" maxlength="60" value="${esc(day.name)}" placeholder="e.g. Upper A"></div>
+  <div class="field"><label>Exercises — one per line</label><textarea data-draft-exercises="${i}" placeholder="Bench Press | 3 | 6-8 | 120">${esc(day.text)}</textarea></div>
+ </div>`).join('');
+}
+function resetSplitEditor(){
+ editingSplitId=null;splitDraftDays=[{id:id(),name:'Day 1',text:''}];
+ $('splitName').value='';$('splitEditor').classList.remove('hidden');$('saveSplit').textContent='Save split';renderSplitDayEditor();
+}
+function parseSplitExercises(text){
+ return String(text||'').split(/\r?\n/).map(line=>line.trim()).filter(Boolean).map(line=>{
+  const parts=line.split('|').map(x=>x.trim());
+  return {name:parts[0],sets:Math.max(1,Math.min(10,parseInt(parts[1],10)||3)),target:parts[2]||'8-12',rest:Math.max(15,Math.min(600,parseInt(parts[3],10)||90))};
+ }).filter(x=>x.name);
+}
+function renderSplitManager(){
+ const host=$('savedSplits');if(!host)return;
+ if(!state.customSplits.length){host.innerHTML='<div class="empty">No custom splits yet. Create one to get started.</div>';return}
+ host.innerHTML=state.customSplits.map(split=>`<div class="split-card"><div class="between"><div><strong>${esc(split.name)}</strong><div class="small">${split.days.length} training day${split.days.length===1?'':'s'}</div></div><div class="row"><button class="btn secondary" data-edit-split="${split.id}">Edit</button><button class="btn danger" data-delete-split="${split.id}">Delete</button></div></div>
+ ${split.days.map(day=>`<div class="split-day-row"><span class="small">${esc(day.name)} · ${day.exercises.length} exercises</span><button class="btn secondary" data-use-split-day="${customKey(split.id,day.id)}">Load day</button></div>`).join('')}</div>`).join('');
+}
+function editSplit(splitId){
+ const split=state.customSplits.find(x=>x.id===splitId);if(!split)return;
+ editingSplitId=splitId;$('splitName').value=split.name;
+ splitDraftDays=split.days.map(day=>({id:day.id,name:day.name,text:day.exercises.map(e=>`${e.name} | ${e.sets} | ${e.target} | ${e.rest||90}`).join('\n')}));
+ $('splitEditor').classList.remove('hidden');$('saveSplit').textContent='Update split';renderSplitDayEditor();
+}
+$('newSplit').onclick=resetSplitEditor;
+$('cancelSplit').onclick=()=>{$('splitEditor').classList.add('hidden');editingSplitId=null};
+$('addSplitDay').onclick=()=>{splitDraftDays.push({id:id(),name:`Day ${splitDraftDays.length+1}`,text:''});renderSplitDayEditor()};
+$('splitDaysEditor').onclick=e=>{const b=e.target.closest('[data-remove-draft-day]');if(b){splitDraftDays.splice(Number(b.dataset.removeDraftDay),1);renderSplitDayEditor()}};
+$('splitDaysEditor').oninput=e=>{const t=e.target;if(t.dataset.draftName!==undefined)splitDraftDays[Number(t.dataset.draftName)].name=t.value;if(t.dataset.draftExercises!==undefined)splitDraftDays[Number(t.dataset.draftExercises)].text=t.value};
+$('saveSplit').onclick=()=>{
+ const name=$('splitName').value.trim();if(!name){toast('Enter a programme name');return}
+ if(!splitDraftDays.length){toast('Add at least one training day');return}
+ const days=splitDraftDays.map((day,i)=>({id:day.id||id(),name:day.name.trim()||`Day ${i+1}`,exercises:parseSplitExercises(day.text)}));
+ if(days.some(day=>!day.exercises.length)){toast('Add at least one exercise to every training day');return}
+ const split={id:editingSplitId||id(),name,days};
+ if(editingSplitId){const i=state.customSplits.findIndex(x=>x.id===editingSplitId);if(i>=0)state.customSplits[i]=split;else state.customSplits.push(split)}else state.customSplits.push(split);
+ $('splitEditor').classList.add('hidden');editingSplitId=null;refreshWorkoutTypes();renderSplitManager();save();toast('Training split saved');
+};
+$('savedSplits').onclick=e=>{
+ const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.editSplit){editSplit(b.dataset.editSplit);return}
+ if(b.dataset.deleteSplit){const split=state.customSplits.find(x=>x.id===b.dataset.deleteSplit);if(!split)return;if(confirm(`Delete "${split.name}"? Saved workout history will be kept.`)){state.customSplits=state.customSplits.filter(x=>x.id!==split.id);if(customKeyParts(state.current.type)?.splitId===split.id){state.current.type='Upper A';state.current.exercises=[];$('wtype').value='Upper A'}save();toast('Split deleted')}return}
+ if(b.dataset.useSplitDay){$('wtype').value=b.dataset.useSplitDay;setPlan(b.dataset.useSplitDay);sync();document.querySelector('[data-tab="training"]').click();toast('Training day loaded')}
+};
+function init(){const d=today();$('today').textContent=new Date().toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'});['wdate','fdate','mdate','rdate'].forEach(k=>$(k).value=d);$('wtype').value=state.current.type||'Upper A';$('wdate').value=state.current.date||d;$('duration').value=state.current.duration||'';$('wnotes').value=state.current.notes||''}
+function sync(){state.current.type=$('wtype').value;state.current.date=$('wdate').value;state.current.duration=$('duration').value;state.current.notes=$('wnotes').value}
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab));if(b.dataset.tab==='progress')drawChart([...state.measurements].sort((a,b)=>a.date.localeCompare(b.date)))});
+document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>document.querySelector(`[data-tab="${b.dataset.go}"]`).click());
+ function openWorkout(type) {
+  $('wtype').value = type;
+  sync();
+  setPlan(type);
+  document.querySelector('[data-tab="training"]').click();
+  toast(type + ' loaded');
+}
+
+document.querySelectorAll('[data-workout]').forEach(card => {
+  card.style.cursor = 'pointer';
+
+  card.addEventListener('click', () => {
+    openWorkout(card.dataset.workout);
+  });
+
+  card.addEventListener('keydown', event => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      openWorkout(card.dataset.workout);
+    }
+  });
+});
+$('loadplan').onclick=()=>{sync();setPlan($('wtype').value);toast('Workout loaded')};
+$('addex').onclick=()=>{state.current.exercises.push(newEx('New exercise'));renderExercises()};
+$('exercises').oninput=e=>{const t=e.target;if(t.dataset.name){const x=state.current.exercises.find(a=>a.id===t.dataset.name);if(x)x.name=t.value}if(t.dataset.set){const x=state.current.exercises.find(a=>a.id===t.dataset.set),s=x?.sets[+t.dataset.i];if(s)s[t.dataset.key]=t.value}};
+$('exercises').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.remove){state.current.exercises=state.current.exercises.filter(x=>x.id!==b.dataset.remove);renderExercises()}if(b.dataset.addset){const x=state.current.exercises.find(a=>a.id===b.dataset.addset);x?.sets.push({weight:'',reps:'',done:false});renderExercises()}if(b.dataset.done){const x=state.current.exercises.find(a=>a.id===b.dataset.done),s=x?.sets[+b.dataset.i];if(s){s.done=!s.done;renderExercises()}}if(b.hasAttribute('data-rest')){setTimer(Number(b.dataset.rest)||90);startTimer()}};
+$('saveworkout').onclick=()=>{sync();if(!state.current.exercises.length){toast('Load or add exercises first');return}state.workouts.push({id:id(),...JSON.parse(JSON.stringify(state.current)),savedAt:new Date().toISOString()});state.current={type:state.current.type,date:today(),duration:'',notes:'',exercises:[]};init();setPlan(state.current.type);save();toast('Workout saved')};
+$('clearworkout').onclick=()=>{if(confirm('Clear the current unsaved workout?')){state.current.exercises=[];$('wnotes').value='';renderExercises()}};
+$('whistory').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.workDel){state.workouts=state.workouts.filter(w=>w.id!==b.dataset.workDel);save()}if(b.dataset.reload){const w=state.workouts.find(w=>w.id===b.dataset.reload);state.current=JSON.parse(JSON.stringify(w));delete state.current.id;delete state.current.savedAt;init();$('wtype').value=w.type;$('wdate').value=w.date;$('duration').value=w.duration||'';$('wnotes').value=w.notes||'';renderExercises();document.querySelector('[data-tab="training"]').click()}}
+$('addfood').onclick=()=>{if(!$('fname').value.trim()){toast('Enter a food name');return}state.foods.push({id:id(),name:$('fname').value.trim(),cal:n($('fcal').value),pro:n($('fpro').value),date:$('fdate').value||today()});$('fname').value='';$('fcal').value='';$('fpro').value='';save();toast('Food added')};
+$('fdate').onchange=renderFood;
+$('foodlist').onclick=e=>{const b=e.target.closest('[data-food-del]');if(b){state.foods=state.foods.filter(f=>f.id!==b.dataset.foodDel);save()}};
+$('savemeasure').onclick=()=>{const weight=$('weight').value,waist=$('waist').value;if(weight===''&&waist===''){toast('Enter weight or waist');return}state.measurements.push({id:id(),date:$('mdate').value||today(),weight:weight===''?'':n(weight),waist:waist===''?'':n(waist)});$('weight').value='';$('waist').value='';save();toast('Measurement saved')};
+$('measurelist').onclick=e=>{const b=e.target.closest('[data-measure-del]');if(b){state.measurements=state.measurements.filter(m=>m.id!==b.dataset.measureDel);save()}};
+$('saverecovery').onclick=()=>{state.recoveries.push({id:id(),date:$('rdate').value||today(),sleep:$('sleep').value,energy:$('energy').value,stress:$('stress').value,soreness:$('soreness').value,notes:$('rnotes').value.trim()});$('rnotes').value='';save();toast('Check-in saved')};
+$('recoverylist').onclick=e=>{const b=e.target.closest('[data-recovery-del]');if(b){state.recoveries=state.recoveries.filter(r=>r.id!==b.dataset.recoveryDel);save()}};
+$('savesettings').onclick=()=>{state.settings.calories=Math.max(1,n($('ctarget').value)||2800);state.settings.protein=Math.max(1,n($('ptarget').value)||130);save();toast('Targets saved')};
+$('export').onclick=()=>{const blob=new Blob([JSON.stringify({app:'Apex Protocol',...state},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='apex-protocol-backup-'+today()+'.json';a.click();URL.revokeObjectURL(url)};
+$('import').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const v=JSON.parse(await f.text());if(!Array.isArray(v.workouts)||!Array.isArray(v.foods)||!Array.isArray(v.measurements))throw Error();if(confirm('Replace current data with this backup?')){const d=defaults();state={...d,...v,customSplits:Array.isArray(v.customSplits)?v.customSplits:[],settings:{...d.settings,...v.settings},current:{...d.current,...v.current}};init();setPlan(state.current.type);save();toast('Backup restored')}}catch{alert('Invalid Apex Protocol backup file')}e.target.value=''};
+$('erase').onclick=()=>{if(confirm('Delete all app records from this browser? Export a backup first if needed.')){state=defaults();localStorage.removeItem(KEY);init();setPlan('Upper A');save();toast('Data cleared')}};
+
+// ===== REST TIMER =====
+let timer = 90;
+let interval = null;
+let audioContext = null;
+
+// Enable audio when the user presses Start
+function enableTimerAudio() {
+  const AudioClass = window.AudioContext || window.webkitAudioContext;
+
+  if (!AudioClass) {
+    console.warn('Web Audio is not supported by this browser.');
+    return;
+  }
+
+  try {
+    if (!audioContext || audioContext.state === 'closed') {
+      audioContext = new AudioClass();
+    }
+
+    if (audioContext.state === 'suspended') {
+      audioContext.resume().catch(error => {
+        console.warn('Could not enable timer audio:', error);
+      });
+    }
+  } catch (error) {
+    console.error('Timer audio setup failed:', error);
+  }
+}
+
+// Play a two-tone alert when the rest timer finishes
+function playTimerAlert() {
+  if (!audioContext || audioContext.state !== 'running') {
+    console.warn('Timer audio is not running.');
+    return;
+  }
+
+  try {
+    const now = audioContext.currentTime;
+
+    [880, 1100, 880].forEach((frequency, index) => {
+      const oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      const start = now + index * 0.25;
+      const end = start + 0.2;
+
+      oscillator.type = 'sine';
+      oscillator.frequency.value = frequency;
+
+      gain.gain.setValueAtTime(0.001, start);
+      gain.gain.exponentialRampToValueAtTime(0.3, start + 0.02);
+      gain.gain.setValueAtTime(0.3, start + 0.12);
+      gain.gain.exponentialRampToValueAtTime(0.001, end);
+
+      oscillator.connect(gain);
+      gain.connect(audioContext.destination);
+
+      oscillator.start(start);
+      oscillator.stop(end);
+    });
+  } catch (error) {
+    console.error('Timer alert failed:', error);
+  }
+}
+
+// Format remaining time as MM:SS
+function timerText() {
+  return String(Math.floor(timer / 60)).padStart(2, '0') + ':' +
+         String(timer % 60).padStart(2, '0');
+}
+
+// Set the timer duration
+function setTimer(seconds) {
+  clearInterval(interval);
+  interval = null;
+
+  timer = Math.max(0, Number(seconds) || 0);
+  $('timer').textContent = timerText();
+}
+
+// Start the countdown
+function startTimer() {
+  enableTimerAudio();
+
+  if (interval) clearInterval(interval);
+
+  if (timer <= 0) {
+    timer = 90;
+    $('timer').textContent = timerText();
+  }
+
+  interval = setInterval(() => {
+    if (timer > 0) {
+      timer--;
+      $('timer').textContent = timerText();
+    }
+
+    if (timer <= 0) {
+      clearInterval(interval);
+      interval = null;
+      timer = 0;
+      $('timer').textContent = timerText();
+
+      toast('Rest complete');
+
+      // Best-effort vibration; iPhone Safari may not support this
+      if (typeof navigator.vibrate === 'function') {
+        navigator.vibrate([300, 150, 300, 150, 600]);
+      }
+
+      // Play the sound alert
+      playTimerAlert();
+    }
+  }, 1000);
+}
+
+// Preset duration buttons
+document.querySelectorAll('[data-seconds]').forEach(button => {
+  button.onclick = () => {
+    setTimer(Number(button.dataset.seconds));
+  };
+});
+
+// Start button
+$('starttimer').onclick = () => {
+  if (!interval) startTimer();
+};
+
+// Pause button
+$('pausetimer').onclick = () => {
+  clearInterval(interval);
+  interval = null;
+};
+
+// Reset button
+$('resettimer').onclick = () => {
+  setTimer(90);
+};
+
+window.addEventListener('resize',()=>{if($('progress').classList.contains('active'))drawChart(state.measurements)});
+init();refreshWorkoutTypes();setPlan(state.current.type||'Upper A');render();
+})();
+</script>
+<script>
+if ('serviceWorker' in navigator && !(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js');
+  });
+}
+</script>
+</body>
+</html>
