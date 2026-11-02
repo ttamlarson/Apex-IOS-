@@ -2,3 +2,7 @@ node_modules/
 .DS_Store
 ios/App/build/
 ios/DerivedData/
+.apex-backup/
+apex-scan-report.txt
+*.apexbackup.json
+apex-backup-*.json
