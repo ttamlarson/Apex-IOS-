@@ -1,28 +1,49 @@
-const CACHE = "apex-protocol-v3";
+const CACHE = "apex-protocol-v4";
 const FILES = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
-  "./manifest.json",
   "./icon.svg",
-  "./apple-touch-icon.png"
+  "./apple-touch-icon.png",
+  "./apex-security.js",
+  "./rest-notify.js",
+  "./backup-share.js"
 ];
+
+// Precache each file separately: one missing file must not stop the worker installing.
 self.addEventListener("install", event => {
-  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(FILES)).then(() => self.skipWaiting()));
+  event.waitUntil(
+    caches.open(CACHE)
+      .then(cache => Promise.allSettled(FILES.map(file => cache.add(file))))
+      .then(() => self.skipWaiting())
+  );
 });
+
+// Remove old caches (v3 and earlier).
 self.addEventListener("activate", event => {
-  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key)))).then(() => self.clients.claim()));
+  event.waitUntil(
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key))))
+      .then(() => self.clients.claim())
+  );
 });
+
+// Network-first: always try for the newest files (so security fixes reach everyone),
+// and fall back to the cache when offline.
 self.addEventListener("fetch", event => {
-  if (event.request.method !== "GET") return;
-  event.respondWith(caches.match(event.request).then(cached => {
-    if (cached) return cached;
-    return fetch(event.request).then(response => {
-      if (response.ok && new URL(event.request.url).origin === self.location.origin) {
-        const copy = response.clone();
-        caches.open(CACHE).then(cache => cache.put(event.request, copy));
-      }
-      return response;
-    }).catch(() => caches.match("./index.html"));
-  }));
+  const req = event.request;
+  if (req.method !== "GET") return;
+  if (new URL(req.url).origin !== self.location.origin) return; // leave other sites alone
+
+  event.respondWith(
+    fetch(req, { cache: "no-cache" })
+      .then(res => {
+        if (res.ok) {
+          const copy = res.clone();
+          caches.open(CACHE).then(cache => cache.put(req, copy));
+        }
+        return res;
+      })
+      .catch(() => caches.match(req).then(hit => hit || caches.match("./index.html")))
+  );
 });
